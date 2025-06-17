@@ -271,21 +271,24 @@ public class ShareUtil{
     
     
     
-    func shareToWhatsApp(args : [String: Any?],result: @escaping FlutterResult)  {
-        let message = args[self.argMessage] as? String
-        let whatsURL = "whatsapp://send?text="+message!
+    func shareToWhatsApp(args : [String: Any?], result: @escaping FlutterResult)  {
+        let message = args[self.argMessage] as? String ?? ""
+        let whatsURL = "whatsapp://send?text=" + message
         
         var characterSet = CharacterSet.urlQueryAllowed
         characterSet.insert(charactersIn: "?&")
-        let whatsAppURL  = NSURL(string: whatsURL.addingPercentEncoding(withAllowedCharacters: characterSet)!)
-        if UIApplication.shared.canOpenURL(whatsAppURL! as URL)
-        {
-            UIApplication.shared.open(whatsAppURL, options: [:], completionHandler: nil)
-            result(SUCCESS);
-        }
-        else
-        {
-            result(ERROR_APP_NOT_AVAILABLE);
+        
+        if let encodedURLString = whatsURL.addingPercentEncoding(withAllowedCharacters: characterSet),
+        let whatsAppURL = URL(string: encodedURLString) {
+            
+            if UIApplication.shared.canOpenURL(whatsAppURL) {
+                UIApplication.shared.open(whatsAppURL, options: [:], completionHandler: nil)
+                result(SUCCESS)
+            } else {
+                result(ERROR_APP_NOT_AVAILABLE)
+            }
+        } else {
+            result(FlutterError(code: "INVALID_URL", message: "Failed to encode WhatsApp URL", details: nil))
         }
     }
     
